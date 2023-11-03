@@ -3,11 +3,11 @@ import torch.optim as optim
 import torch.nn as nn
 import torchvision
 import torchvision.transforms as transforms
-import data_loader
-from model import Net
+import nn
+from data import Net
 
 # Load data
-trainloader, testloader, classes = data_loader.get_data_loaders(batch_size=4)
+trainloader, testloader, classes = nn.get_data_loaders(batch_size=4)
 
 # Define the network
 net = Net()
@@ -20,11 +20,32 @@ optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
 for epoch in range(2):
     running_loss = 0.0
     for i, data in enumerate(trainloader, 0):
-        # ...
+        # Training loop
+        for epoch in range(2):
+            running_loss = 0.0
+            for i, data in enumerate(trainloader, 0):
+                inputs, labels = data
 
-        # Training code here (as in your existing code)
+                # zero the parameter gradients
+                optimizer.zero_grad()
 
-        # ...
+                # forward + backward + optimize
+                outputs = net(inputs)
+                loss = criterion(outputs, labels)
+                loss.backward()
+                optimizer.step()
+
+                # print statistics
+                running_loss += loss.item()
+                if i % 2000 == 1999:
+                    print(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 2000:.3f}')
+                    running_loss = 0.0
+
+        print('Finished Training')
+
+        # Save the model
+        PATH = './cifar_net.pth'
+        torch.save(net.state_dict(), PATH)
 
         if i % 2000 == 1999:
             print(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 2000:.3f}')
